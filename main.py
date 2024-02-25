@@ -4,7 +4,6 @@
 
 from machine import Pin
 import time
-import _thread
 import json
 import network
 import secrets
@@ -19,6 +18,7 @@ led = machine.Pin("LED", machine.Pin.OUT)
 
 lock = 0
 state = 0
+listenport = 80
 
 # Function to turn on and off relay
 def relay_on_off(state):
@@ -182,7 +182,6 @@ def check_wifi(wlan, sleepTime=5):
     #while True:
         if not wlan.isconnected():
             print('WiFi is not connected.  Resetting WiFi.')
-            #wlan.disconnect()
             sleep(2)
             if connect_to_wifi(wlan):
                 print('Reset Successful')
@@ -203,7 +202,7 @@ def listen():
     tcpServer = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
     tcpServer.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     tcpServer.settimeout(5) # timeout for listening
-    tcpServer.bind(('0.0.0.0', 80)) # IP and PORT
+    tcpServer.bind(('0.0.0.0', listenport)) # IP and PORT
     tcpServer.listen(1)
     while not stopListen:
         try: 
