@@ -4,10 +4,9 @@
 
 from machine import Pin
 import time
-import json
 import network
 import secrets
-from utime import sleep
+from time import sleep
 import socket
 
 # setup relay pin as output
@@ -159,38 +158,54 @@ def process_payload(payload):
 def connect_to_wifi(wlan):  
     print('Connecting to WiFi Network Name:', secrets.SSID)
     wlan.active(True) # power up the WiFi chip
+    led.toggle()
     print('Waiting for wifi chip to power up...')
     # check wlan status until it is ready
     sleep(2)
+    led.toggle()
     print('WiFi chip is ready.')    
     wlan.connect(secrets.SSID, secrets.PASSWORD)
     print('Waiting for access point to log us in.')
     maxwait = 5
     while wlan.isconnected() == False:
         sleep(1)
+        led.toggle()
         maxwait -= 1
-        
+    led.value(0)
     if wlan.isconnected():
         print('Success! We have connected to your access point!')
         print('Try to ping the device at', wlan.ifconfig()[0])
+        blink_led()
+        blink_led()
+        blink_led()
     else:
         print('Failure! We have not connected to your access point!  Check your secrets.py file for errors.')
+        blink_led(1)
+        blink_led(1)
+        blink_led(1)
+        blink_led(1)
+        blink_led(1)
     return wlan.isconnected()
 
 # a function that keeps checking for WiFi status every second, and resets the WiFi if it is not connected
 def check_wifi(wlan, sleepTime=5):
     #while True:
+        blink_led()
         if not wlan.isconnected():
             print('WiFi is not connected.  Resetting WiFi.')
+            led.toggle()
             sleep(2)
             if connect_to_wifi(wlan):
                 print('Reset Successful')
             else:
                 print('Reset Failed')
+            led.toggle()
         else:
+            led.toggle()
             sleep(sleepTime)
+            led.toggle()
 
-def blink_led(t):
+def blink_led(t=0.01):
     led.toggle()
     sleep(t)
     led.toggle()
@@ -220,7 +235,8 @@ def listen():
             # work with the connection, create a thread etc.
             print('Got connection from', (ip, port))
             #print('Content = %s' % request)
-            try: 
+            try:
+                blink_led(0.01)
                 request = conn.recv(1024)
                 request = request.decode()
 
@@ -259,6 +275,8 @@ def listen():
     tcpServer.close()
 
 # MAIN
+blink_led(0.5)
+blink_led(0.5)
 wlan = network.WLAN(network.STA_IF)
 connect_to_wifi(wlan)
 
@@ -266,4 +284,5 @@ stopListen = False
 
 print("Starting server")
 listen()
+
 
